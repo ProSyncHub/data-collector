@@ -1,68 +1,53 @@
-// import { scrapeData, scrapeData2, scrapeDataProduct } from "@/modules/scraper/scraper.service";
+import { brightDataScrape } from "@/modules/scraper/scraper.client";
 
-// // export async function GET() {
-// //   try {
-// //     const result1 = await scrapeData();
-// //     const result2 = await scrapeData2();
-// //     const result3 = await scrapeDataProduct();
-// //     return new Response(JSON.stringify({ result1, result2, result3 }), { status: 200 });
-// //   } catch (error) {
-// //     console.error(error);
-// //     return new Response(JSON.stringify({ error: "Failed to scrape data" }), { status: 500 });
-// //   }
-// // }
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
 
-// export async function GET() {
-//   try {
-//     const result = await scrapeDataProduct();
+    const asin = searchParams.get("asin");
 
-//     return Response.json({
-//       result,
-//     });
-//   } catch (error: any) {
-//     console.error(
-//       error.response?.data || error.message
-//     );
+    if (!asin) {
+      return Response.json(
+        { error: "ASIN is required" },
+        { status: 400 }
+      );
+    }
 
-//     return Response.json(
-//       {
-//         error:
-//           error.response?.data ||
-//           error.message,
-//       },
-//       { status: 500 }
-//     );
-//   }
-// }
+    const datasetId =
+      process.env.BRIGHTDATA_DATASET_ID;
 
+    if (!datasetId) {
+      return Response.json(
+        {
+          error:
+            "BRIGHTDATA_DATASET_ID is not configured",
+        },
+        { status: 500 }
+      );
+    }
 
-// import { scrapeProduct } from "@/modules/scraper/amazon.scraper";
+    const result = await brightDataScrape(
+      datasetId,
+      [
+        {
+          "url": `https://www.amazon.in/dp/${asin}`,
+        },
+      ]
+    );
 
-import { brightDataRun } from "@/modules/scraper/scraper.client";
+    return Response.json(result);
+  } catch (error: any) {
+    console.error(
+      error.response?.data || error.message
+    );
 
-export async function GET(
-  request: Request
-) {
-  const { searchParams } = new URL(request.url);
-
-  const asin = searchParams.get("asin");
-
-  if (!asin) {
     return Response.json(
-      { error: "ASIN is required" },
-      { status: 400 }
+      {
+        error:
+          error.response?.data || error.message,
+      },
+      { status: 500 }
     );
   }
-
-  const result = await brightDataRun(
-  process.env.BRIGHTDATA_DATASET_ID!,
-  "url",
-  [
-    {
-      url: `https://www.amazon.in/dp/${asin}`,
-    },
-  ]
-);
-
-  return Response.json(result);
 }
+

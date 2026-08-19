@@ -21,7 +21,7 @@ enum ScrapeStatus {
 
 model BestSellerSnapshot {
   id           String       @id @default(cuid())
-  snapshotId   String       @unique
+  snapshotId   String?      @unique
   categoryUrl  String
   datasetId    String
   status       ScrapeStatus @default(TRIGGERED)
