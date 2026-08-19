@@ -98,6 +98,8 @@ export async function GET(
             type: "discover_new",
             discover_by:
               "best_sellers_url",
+              endpoint: "https://data-collector-eta.vercel.app/api/webhooks/bright-data",
+              auth_header: `Bearer ${process.env.BRIGHTDATA_WEBHOOK_SECRET}`,
           }
         );
 
