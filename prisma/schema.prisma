@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ScrapeStatus {
+  TRIGGERED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model BestSellerSnapshot {
+  id           String       @id @default(cuid())
+  snapshotId   String       @unique
+  categoryUrl  String
+  datasetId    String
+  status       ScrapeStatus @default(TRIGGERED)
+  errorMessage String?
+  itemCount    Int?
+  createdAt    DateTime     @default(now())
+  completedAt  DateTime?
+
+  items BestSellerItem[]
+
+  @@index([categoryUrl])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Product {
+  id   String @id @default(cuid())
+  asin String @unique
+
+  title        String?
+  brand        String?
+  manufacturer String?
+  description  String?
+
+  currency       String?
+  initialPrice   Float?
+  finalPrice     Float?
+  finalPriceHigh Float?
+  discount       String?
+
+  availability String?
+  isAvailable  Boolean?
+
+  rating          Float?
+  reviewsCount    Int?
+  boughtPastMonth Int?
+
+  sellerName      String?
+  sellerId        String?
+  numberOfSellers Int?
+
+  image    String?
+  imageUrl String?
+  images   Json?
+
+  productDimensions String?
+  itemWeight        String?
+
+  rootBsRank     Int?
+  bsRank         Int?
+  rootBsCategory String?
+  bsCategory     String?
+  badge          String?
+
+  amazonChoice Boolean?
+  sponsored    Boolean?
+  amazonPrime  Boolean?
+
+  url    String?
+  domain String?
+
+  features        Json?
+  productDetails  Json?
+  categories      Json?
+  categoryTree    Json?
+  subcategoryRank Json?
+
+  rawData Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bestSellerItems BestSellerItem[]
+
+  @@index([bsRank])
+  @@index([rootBsRank])
+}
+
+model BestSellerItem {
+  id String @id @default(cuid())
+
+  snapshotId String
+  productId  String
+
+  rank     Int?
+  rootRank Int?
+  category String?
+  badge    String?
+
+  createdAt DateTime @default(now())
+
+  snapshot BestSellerSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([snapshotId, productId])
+  @@index([snapshotId])
+  @@index([productId])
+}
