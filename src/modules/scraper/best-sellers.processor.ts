@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
+
 type BrightDataProduct = {
   asin?: string;
   title?: string;
